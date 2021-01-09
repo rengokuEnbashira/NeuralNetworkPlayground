@@ -7,10 +7,10 @@ class MyNN extends eNeuralNetwork{
     eLayer layers[];
     public MyNN(){
 	layers = new eLayer[5];
-	layers[0] = new eLinear(2,7);
+	layers[0] = new eLinear(2,5);
 	layers[1] = new eReLU();
-	layers[2] = new eLinear(7,2);
-	layers[3] = new eSigmoid();
+	layers[2] = new eLinear(5,2);
+	layers[3] = new eReLU();
 	layers[4] = new eSoftmax();
     }
     public eMatrix forward(eMatrix inp){
@@ -71,7 +71,7 @@ public class eTest{
 	out_set.data[3][0] = 1;
 	out_set.data[3][1] = 0;
 
-	net.train(in_set,out_set,loss,1,1000);
+	net.train(in_set,out_set,loss,0.01,1000);
 	System.out.println(net.forward(in_set));
     }
 }

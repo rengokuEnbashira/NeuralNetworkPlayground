@@ -10,15 +10,16 @@ public class eSoftmax extends eLayer{
     
     public eMatrix forward(eMatrix inp){
 	eMatrix tmp = inp.applyFunc((x)->Math.exp(x));
-	eMatrix acc = tmp.sum(0);
+	eMatrix acc = tmp.sum(1);
 	tmp_in = inp;
 	tmp_out = tmp.div(acc);
 	return tmp_out;
     }
 
     public eMatrix backward(eMatrix err){
+	eMatrix tmp = err.times(tmp_out);
 	tmp_err = err;
-	return tmp_out.applyFunc((x)->x - x*x).times(err);
+	return tmp.diff(tmp_out.times(tmp.sum(1)));
     }
 
     public void update(double learning_rate){

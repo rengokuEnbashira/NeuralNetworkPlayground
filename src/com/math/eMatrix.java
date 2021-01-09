@@ -90,9 +90,23 @@ public class eMatrix{
     }
     public eMatrix times(eMatrix M){
 	eMatrix out = new eMatrix(this.rows,this.cols);
-	for(int i = 0;i<this.rows;i++){
-	    for(int j = 0;j<this.cols;j++)
-		out.data[i][j] = this.data[i][j] * M.data[i][j];
+	if(M.rows == 1){
+	    for(int i = 0;i<this.rows;i++){
+		for(int j = 0;j<this.cols;j++)
+		    out.data[i][j] = this.data[i][j] * M.data[0][j];
+	    }
+	}
+	else if(M.cols == 1){
+	    for(int i = 0;i<this.rows;i++){
+		for(int j = 0;j<this.cols;j++)
+		    out.data[i][j] = this.data[i][j] * M.data[i][0];
+	    }
+	}
+	else{
+	    for(int i = 0;i<this.rows;i++){
+		for(int j = 0;j<this.cols;j++)
+		    out.data[i][j] = this.data[i][j] * M.data[i][j];
+	    }
 	}
 	return out;
     }
@@ -172,18 +186,18 @@ public class eMatrix{
     public eMatrix sum(int axis){
 	eMatrix out = null;
 	if(axis == 0){
-	    out = new eMatrix(this.rows,1);
-	    out.zeros();
-	    for(int i = 0;i<this.rows;i++)
-		for(int j = 0;j<this.cols;j++)
-		    out.data[i][0] += this.data[i][j];
-	}
-	else if(axis == 1){
 	    out = new eMatrix(1,this.cols);
 	    out.zeros();
 	    for(int i = 0;i<this.rows;i++)
 		for(int j = 0;j<this.cols;j++)
 		    out.data[0][j] += this.data[i][j];
+	}
+	else if(axis == 1){
+	    out = new eMatrix(this.rows,1);
+	    out.zeros();
+	    for(int i = 0;i<this.rows;i++)
+		for(int j = 0;j<this.cols;j++)
+		    out.data[i][0] += this.data[i][j];
 	}
 	return out;
     }

@@ -16,6 +16,8 @@ public class eLinear extends eLayer{
 	this.b = new eMatrix(1,num_out);
 	this.W.random();
 	this.b.random();
+	this.W = this.W.applyFunc((x)->2*x - 1);
+	this.b = this.b.applyFunc((x)->2*x - 1);
     }
     public eMatrix forward(eMatrix inp){
 	tmp_in = inp;

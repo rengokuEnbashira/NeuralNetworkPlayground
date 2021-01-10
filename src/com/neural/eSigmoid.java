@@ -15,7 +15,7 @@ public class eSigmoid extends eLayer{
     }
     public eMatrix backward(eMatrix err){
 	tmp_err = err;
-	return tmp_out.times(tmp_out.times(-1).add(1)).times(err);
+	return tmp_out.applyFunc((x)->x*(1-x)).times(err);
     }
     public void update(double learning_rate){
 	

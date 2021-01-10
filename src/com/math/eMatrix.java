@@ -44,16 +44,16 @@ public class eMatrix{
     }
     public eMatrix add(eMatrix M){
 	eMatrix out = new eMatrix(this.rows,this.cols);
-	if(M.cols == 1){
-	    for(int i = 0;i<this.rows;i++){
-		for(int j = 0;j<this.cols;j++)
-		    out.data[i][j] = this.data[i][j] + M.data[i][0];
-	    }
-	}
-	else if(M.rows == 1){
+	if(M.rows == 1){
 	    for(int i = 0;i<this.rows;i++){
 		for(int j = 0;j<this.cols;j++)
 		    out.data[i][j] = this.data[i][j] + M.data[0][j];
+	    }
+	}
+	else if(M.cols == 1){
+	    for(int i = 0;i<this.rows;i++){
+		for(int j = 0;j<this.cols;j++)
+		    out.data[i][j] = this.data[i][j] + M.data[i][0];
 	    }
 	}
 	else{

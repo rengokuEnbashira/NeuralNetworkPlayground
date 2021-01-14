@@ -6,12 +6,12 @@ import com.neural.*;
 class MyNN extends eNeuralNetwork{
     eLayer layers[];
     public MyNN(){
-	layers = new eLayer[4];
-	layers[0] = new eLinear(2,3);
+	layers = new eLayer[5];
+	layers[0] = new eLinear(2,5);
 	layers[1] = new eTanh();
-	layers[2] = new eLinear(3,2);
-	layers[3] = new eTanh();
-	//layers[4] = new eSoftmax();
+	layers[2] = new eLinear(5,2);
+	layers[3] = new eSigmoid();
+	layers[4] = new eSoftmax();
     }
     public eMatrix forward(eMatrix inp){
 	eMatrix tmp;
@@ -50,8 +50,8 @@ public class eTest{
 	eMatrix in_set = new eMatrix(30,2);
 	eMatrix out_set = new eMatrix(30,2);
 	MyNN net = new MyNN();
-	eLoss loss = new eMeanSquareLoss();
-	//eLoss loss = new eCrossEntropyLoss();
+	//eLoss loss = new eMeanSquareLoss();
+	eLoss loss = new eCrossEntropyLoss();
 
         in_set.data[0][0] = 1.028717;
 	in_set.data[0][1] = -2.466173;

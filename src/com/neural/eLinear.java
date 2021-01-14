@@ -31,7 +31,7 @@ public class eLinear extends eLayer{
     public void update(double learning_rate){
 	eMatrix delta = tmp_in.transpose().dot(tmp_err);
 	this.W = this.W.diff(delta.times(learning_rate));
-	this.b = this.b.diff(delta.sum(0).times(learning_rate));
+	this.b = this.b.diff(tmp_err.sum(0).times(learning_rate));
     }
 
     public String toString(){

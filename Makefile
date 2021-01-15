@@ -5,3 +5,4 @@ test:
 lib:
 	javac -sourcepath src/ -d build/ src/com/*/*.java
 	jar cf eNeuralNetwork.jar -C build/ *
+	rm -r build/com

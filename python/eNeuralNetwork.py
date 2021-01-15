@@ -1,6 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 
+SIGMOID = 0
+TANH = 1
+RELU = 2
+
 class eLinear:
     def __init__(self,ni,no):
         self.ni = ni
@@ -111,13 +115,56 @@ class eSequential:
             self.update(learning_rate)
         if showLoss:
             plt.plot(np.array(tmp))
-            plt.title("Loss evolutions")
+            plt.title("Loss evolution")
             plt.xlabel("ephocs")
             plt.ylabel("loss")
             plt.grid()
             plt.show()
         return tmp
 
+class eMLPClassifier:
+    def __init__(self,num_neurons,act_fun=SIGMOID):
+        self.layers = []
+        for i,j in zip(num_neurons[:-1],num_neurons[1:]):
+            self.layers.append(eLinear(i,j))
+            if act_fun == TANH:
+                self.layers.append(eTanh())
+            elif act_fun == RELU:
+                self.layers.append(eReLU())
+            else:
+                self.layers.append(eSigmoid())
+        self.layers.append(eSoftmax())
+    def forward(self,inp):
+        tmp = inp
+        for layer in self.layers:
+            tmp = layer.forward(tmp)
+        return tmp
+    def backward(self,err):
+        tmp = err
+        for layer in reversed(self.layers):
+            tmp = layer.backward(tmp)
+        return tmp
+    def update(self,learning_rate):
+        for layer in self.layers:
+            layer.update(learning_rate)
+    def train(self,in_set,out_set,learning_rate=1,maxIt=1000,showLoss=False):
+        tmp = []
+        loss = eCrossEntropyLoss();
+        for i in range(maxIt):
+            out = self.forward(in_set)
+            tmp.append(loss.loss(out,out_set))
+            err = loss.grad_loss()
+            self.backward(loss.grad_loss())
+            self.update(learning_rate)
+        if showLoss:
+            plt.plot(np.array(tmp))
+            plt.title("Loss evolution")
+            plt.xlabel("ephocs")
+            plt.ylabel("loss")
+            plt.grid()
+            plt.show()
+        return tmp
+                
 def generate_data(N):
     x_train = np.random.random([N,2])*2 - 1
     x = x_train[:,0]
@@ -132,12 +179,14 @@ if __name__ == "__main__":
     N = 20
     x_train, y_train = generate_data(N)
      
-    seq = eSequential()
-    seq.addLayer(eLinear(2,5))
-    seq.addLayer(eReLU())
-    seq.addLayer(eLinear(5,2))
-    seq.addLayer(eReLU())
-    seq.addLayer(eSoftmax())
-    seq.train(x_train,y_train,eCrossEntropyLoss(),learning_rate=0.1,maxIt=100,showLoss=True)
+    # seq = eSequential()
+    # seq.addLayer(eLinear(2,5))
+    # seq.addLayer(eReLU())
+    # seq.addLayer(eLinear(5,2))
+    # seq.addLayer(eReLU())
+    # seq.addLayer(eSoftmax())
+    # seq.train(x_train,y_train,eCrossEntropyLoss(),learning_rate=0.1,maxIt=100,showLoss=True)
+    net = eMLPClassifier([2,5,2],act_fun=RELU)
+    net.train(x_train,y_train,learning_rate=0.1,maxIt=500,showLoss=True)
     print(y_train)
-    print(seq.forward(x_train))
+    print(net.forward(x_train))

@@ -2,15 +2,16 @@ package com.test;
 
 import com.math.*;
 import com.neural.*;
+import com.graph.*;
 
 class MyNN extends eNeuralNetwork{
     eLayer layers[];
     public MyNN(){
 	layers = new eLayer[5];
 	layers[0] = new eLinear(2,5);
-	layers[1] = new eTanh();
+	layers[1] = new eReLU();
 	layers[2] = new eLinear(5,2);
-	layers[3] = new eSigmoid();
+	layers[3] = new eReLU();
 	layers[4] = new eSoftmax();
     }
     public eMatrix forward(eMatrix inp){
@@ -33,14 +34,22 @@ class MyNN extends eNeuralNetwork{
     public void train(eMatrix inp, eMatrix target, eLoss loss, double learning_rate, int maxIt){
 	double l;
 	eMatrix out,err;
+	double[] loss_log = new double[maxIt];
 	for(int i = 0;i<maxIt;i++){
 	    out = forward(inp);
 	    l = loss.loss(out,target);
+	    loss_log[i] = l;
 	    System.out.println("loss: " + l);
 	    err = loss.grad_loss();
 	    backward(err);
 	    update(learning_rate);
 	}
+	ePlot plt = new ePlot();
+	plt.plot(loss_log);
+	plt.title("Loss evolution");
+	plt.xlabel("ephocs");
+	plt.ylabel("Loss");
+	plt.showPlot();
     }
 }
 
@@ -174,8 +183,10 @@ public class eTest{
 	out_set.data[28][1] = 0.000000;
 	out_set.data[29][0] = 1.000000;
 	out_set.data[29][1] = 0.000000;
+
+
+	net.train(in_set,out_set,loss,0.1,100);
 	
-	net.train(in_set,out_set,loss,0.2,1000);
 	System.out.println(net.forward(in_set));
     }
 }

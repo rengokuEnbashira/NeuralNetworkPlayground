@@ -1,6 +1,9 @@
-test:
-	javac -sourcepath src/ -d build/ src/com/test/eTest.java
-	java -classpath build/ com.test.eTest
+testMatrix:
+	javac -sourcepath src/ -d build/ src/com/test/eTestMatrix.java
+	java -classpath build/ com.test.eTestMatrix
+testNN:
+	javac -sourcepath src/ -d build/ src/com/test/eTestNeuralNetwork.java
+	java -classpath build/ com.test.eTestNeuralNetwork
 clean:
 	rm -r build/com
 lib:

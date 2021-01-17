@@ -201,4 +201,22 @@ public class eMatrix{
 	}
 	return out;
     }
+    public eMatrix conv(eMatrix M,int padding,int stride){
+	int new_rows,new_cols;
+	eMatrix out;
+	double s;
+	new_rows = (this.rows - M.rows + 2*padding)/stride + 1;
+	new_cols = (this.cols - M.cols + 2*padding)/stride + 1;
+	out = new eMatrix(new_rows,new_cols);
+	for(int i = 0;i < new_rows;i++){
+	    for(int j = 0;j < new_cols;j++){
+		s = 0;
+		for(int k = 0;k < M.rows;k++)
+		    for(int l = 0;l < M.cols;l++)
+			s += M.data[k][l]*this.data[stride*i + padding +  k][stride*j + padding + l];
+		out.data[i][j] = s;
+	    }
+	}
+	return out;
+    }
 }

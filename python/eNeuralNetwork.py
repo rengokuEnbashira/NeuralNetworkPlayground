@@ -73,57 +73,61 @@ class eSoftmax:
     def update(self,learning_rate):
         return None
 
-def conv_mat(I,F,padding,stride):
-    img_rows, img_cols = I.shape
-    filter_rows, filter_cols = F.shape
-    n_rows = (img_rows - 2*padding - filter_rows)/stride + 1
-    n_cols = (img_cols - 2*padding - filter_cols)/stride + 1
-    out = []
-    F1 = np.flip(F)
-
-    for i in range(n_rows):
-        tmp = []
-        for j in range(n_cols):
-            x1 = padding + i*stride
-            y1 = padding + j*stride
-            tmp.append((I[x1:x1+filter_rows,y1:y1+filter_cols]*F1).sum())
-        out.append(tmp)
-    return np.array(out)
-
-def corr_mat(I,F,padding,stride):
-    img_rows, img_cols = I.shape
-    filter_rows, filter_cols = F.shape
-    n_rows = (img_rows - 2*padding - filter_rows)/stride + 1
-    n_cols = (img_cols - 2*padding - filter_cols)/stride + 1
-    out = []
-
-    for i in range(n_rows):
-        tmp = []
-        for j in range(n_cols):
-            x1 = padding + i*stride
-            y1 = padding + j*stride
-            tmp.append((I[x1:x1+filter_rows,y1:y1+filter_cols]*F).sum())
-        out.append(tmp)
-    return np.array(out)
-
+conv = lambda i,f : convolve2d(i,f)[len(f)-1:-len(f)+1,len(f)-1:-len(f)+1]
 class eConv:
-    def __init__(self,num_filters,filter_size,padding=0,stride=1):
+    def __init__(self,num_filters,filter_size):
         self.num_filters = num_filters
-        self.filter_size = filter_size
-        self.filters = np.random.random([num_filters,filter_size[0],filter_size[1]])
-        self.padding = padding
-        self.stride = stride
+        self.filters = np.random.random((num_filters,filter_size[0],filter_size[1]))
     def forward(self,inp):
         self.tmp_in = inp
         self.tmp_out = []
         for I in inp:
             for F in self.filters:
-                self.tmp_out.append(conv_mat(I,F,self.padding,self.stride))
+                self.tmp_out.append(conv(I,F))
         self.tmp_out = np.array(self.tmp_out)
         return self.tmp_out
     def backward(self,err):
         self.tmp_err = err
-        pass
+        fn,fr,fc = self.filters.shape
+        em,er,ec = err.shape
+        n = em//fn
+        tmp = np.zeros((n,er+fr-1,ec+fc-1))
+        for i,e in enumerate(err):
+            tmp[i//fn] += convolve2d(np.flip(self.filters[i%fn]),e)
+        return tmp
+    def update(self,learning_rate):
+        for i,e in enumerate(self.tmp_err):
+            delta = conv(self.tmp_in[i//self.num_filters],e)
+            self.filters[i%self.num_filters] -= learning_rate*delta
+
+class eMaxPooling:
+    def __init__(self,pool_size=(2,2)):
+        self.pool_size = pool_size
+    def forward(self,inp):
+        self.tmp_in = inp
+        n,ir,ic = inp.shape
+        pr,pc = self.pool_size
+        r,c = ir//pr,ic//pc
+        self.tmp_ = np.zeros((n,ir,ic))
+        self.tmp_out = np.zeros((n,r,c))
+        for idx,i in enumerate(inp):
+            for j in range(r):
+                for k in range(c):
+                    ti = i[pr*j:pr*(j+1),pc*k:pc*(k+1)]
+                    tt = self.tmp_[idx,pr*j:pr*(j+1),pc*k:pc*(k+1)]
+                    maxi = np.max(ti)
+                    max_idx = np.where(ti == maxi)
+                    self.tmp_out[idx][j][k] = maxi
+                    tt[max_idx] = 1
+        return self.tmp_out
+    def backward(self,err):
+        pr,pc = self.pool_size
+        _,er,ec = err.shape
+        for i,e in enumerate(err):
+            for j in range(er):
+                for k in range(ec): 
+                    self.tmp_[i,pr*j:pr*(j+1),pc*k:pc*(k+1)] *= e[j][k]
+        return self.tmp_
     def update(self,learning_rate):
         pass
 
@@ -230,6 +234,7 @@ def generate_data(N):
     y_train = np.zeros([N,2])
     y_train[(range(N),t)] = 1
     return x_train,y_train
+
 if __name__ == "__main__":
     N = 20
     x_train, y_train = generate_data(N)
@@ -241,7 +246,23 @@ if __name__ == "__main__":
     # seq.addLayer(eReLU())
     # seq.addLayer(eSoftmax())
     # seq.train(x_train,y_train,eCrossEntropyLoss(),learning_rate=0.1,maxIt=100,showLoss=True)
-    net = eMLPClassifier([2,5,2],act_fun=RELU)
-    net.train(x_train,y_train,learning_rate=0.1,maxIt=500,showLoss=True)
-    print(y_train)
-    print(net.forward(x_train))
+    # net = eMLPClassifier([2,5,2],act_fun=RELU)
+    # net.train(x_train,y_train,learning_rate=0.1,maxIt=500,showLoss=True)
+    # print(y_train)
+    # print(net.forward(x_train))
+    # x = np.random.random([10,32,32])
+    # c = eConv(3,(4,4))
+    # d = c.forward(x)
+    # e = c.backward(d)
+    # c.update(0.5)
+    # print(x.shape)
+    # print(d.shape)
+    # print(e.shape)
+    x = np.random.random([3,4,4])
+    p = eMaxPooling()
+    d = p.forward(x)
+    y = np.random.random(d.shape)
+    e = p.backward(y)
+    print(x)
+    print(y)
+    print(e)

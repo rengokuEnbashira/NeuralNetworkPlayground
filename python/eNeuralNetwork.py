@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
+from scipy.signal import convolve2d
 
 SIGMOID = 0
 TANH = 1
@@ -71,6 +72,60 @@ class eSoftmax:
         return tmp - self.tmp_out*tmp.sum(1).reshape(len(tmp),1)
     def update(self,learning_rate):
         return None
+
+def conv_mat(I,F,padding,stride):
+    img_rows, img_cols = I.shape
+    filter_rows, filter_cols = F.shape
+    n_rows = (img_rows - 2*padding - filter_rows)/stride + 1
+    n_cols = (img_cols - 2*padding - filter_cols)/stride + 1
+    out = []
+    F1 = np.flip(F)
+
+    for i in range(n_rows):
+        tmp = []
+        for j in range(n_cols):
+            x1 = padding + i*stride
+            y1 = padding + j*stride
+            tmp.append((I[x1:x1+filter_rows,y1:y1+filter_cols]*F1).sum())
+        out.append(tmp)
+    return np.array(out)
+
+def corr_mat(I,F,padding,stride):
+    img_rows, img_cols = I.shape
+    filter_rows, filter_cols = F.shape
+    n_rows = (img_rows - 2*padding - filter_rows)/stride + 1
+    n_cols = (img_cols - 2*padding - filter_cols)/stride + 1
+    out = []
+
+    for i in range(n_rows):
+        tmp = []
+        for j in range(n_cols):
+            x1 = padding + i*stride
+            y1 = padding + j*stride
+            tmp.append((I[x1:x1+filter_rows,y1:y1+filter_cols]*F).sum())
+        out.append(tmp)
+    return np.array(out)
+
+class eConv:
+    def __init__(self,num_filters,filter_size,padding=0,stride=1):
+        self.num_filters = num_filters
+        self.filter_size = filter_size
+        self.filters = np.random.random([num_filters,filter_size[0],filter_size[1]])
+        self.padding = padding
+        self.stride = stride
+    def forward(self,inp):
+        self.tmp_in = inp
+        self.tmp_out = []
+        for I in inp:
+            for F in self.filters:
+                self.tmp_out.append(conv_mat(I,F,self.padding,self.stride))
+        self.tmp_out = np.array(self.tmp_out)
+        return self.tmp_out
+    def backward(self,err):
+        self.tmp_err = err
+        pass
+    def update(self,learning_rate):
+        pass
 
 class eMeanSquareLoss:
     def loss(self,output,target):
@@ -164,7 +219,7 @@ class eMLPClassifier:
             plt.grid()
             plt.show()
         return tmp
-                
+
 def generate_data(N):
     x_train = np.random.random([N,2])*2 - 1
     x = x_train[:,0]
